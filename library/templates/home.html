@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+{% if user.is_staff %}
+    <h2>Librarian dashboard</h2>
+    <p>Welcome, {{ user.username }}. Book management, issuing and returns will appear here.</p>
+    <a href="/admin/" class="btn btn-dark">Open admin panel</a>
+{% else %}
+    <h2>Welcome, {{ user.username }}</h2>
+    <p>Your borrowed books and the book catalog will appear here.</p>
+{% endif %}
+{% endblock %}
