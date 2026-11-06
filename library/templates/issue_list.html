@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}Issued books{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">{% if user.is_staff %}Issued books{% else %}My books{% endif %}</h2>
+    {% if user.is_staff %}
+        <a href="{% url 'issue_book' %}" class="btn btn-dark">Issue a book</a>
+    {% endif %}
+</div>
+
+<h5>Currently borrowed</h5>
+<div class="table-responsive">
+<table class="table table-striped bg-white">
+    <thead>
+        <tr>
+            <th>Book</th>
+            {% if user.is_staff %}<th>Member</th>{% endif %}
+            <th>Issued</th><th>Due</th><th>Status</th>
+            {% if user.is_staff %}<th></th>{% endif %}
+        </tr>
+    </thead>
+    <tbody>
+    {% for i in active %}
+        <tr>
+            <td>{{ i.book.title }}</td>
+            {% if user.is_staff %}<td>{{ i.member }}</td>{% endif %}
+            <td>{{ i.issue_date }}</td>
+            <td>{{ i.due_date }}</td>
+            <td>
+                {% if i.due_date < today %}
+                    <span class="badge bg-danger">Overdue, fine ₹{{ i.fine }}</span>
+                {% else %}
+                    <span class="badge bg-success">On time</span>
+                {% endif %}
+            </td>
+            {% if user.is_staff %}
+            <td class="text-end">
+                <form method="post" action="{% url 'return_book' i.pk %}">
+                    {% csrf_token %}
+                    <button class="btn btn-sm btn-outline-dark">Mark returned</button>
+                </form>
+            </td>
+            {% endif %}
+        </tr>
+    {% empty %}
+        <tr><td colspan="6" class="text-center">Nothing borrowed right now.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+
+<h5 class="mt-4">History</h5>
+<div class="table-responsive">
+<table class="table table-striped bg-white">
+    <thead>
+        <tr>
+            <th>Book</th>
+            {% if user.is_staff %}<th>Member</th>{% endif %}
+            <th>Issued</th><th>Returned</th><th>Fine</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for i in history %}
+        <tr>
+            <td>{{ i.book.title }}</td>
+            {% if user.is_staff %}<td>{{ i.member }}</td>{% endif %}
+            <td>{{ i.issue_date }}</td>
+            <td>{{ i.return_date }}</td>
+            <td>{% if i.fine > 0 %}₹{{ i.fine }}{% else %}-{% endif %}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5" class="text-center">No returned books yet.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

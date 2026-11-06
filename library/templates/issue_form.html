@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block title %}Issue a book{% endblock %}
+{% block content %}
+<div class="card mx-auto" style="max-width: 520px;">
+    <div class="card-body">
+        <h3 class="mb-3">Issue a book</h3>
+        <p class="text-muted">Only books with copies in stock are listed. Due date is 14 days from today.</p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button class="btn btn-dark">Issue</button>
+            <a href="{% url 'issue_list' %}" class="btn btn-outline-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
