@@ -6,7 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.core.exceptions import PermissionDenied
 from django.db import transaction
-from django.db.models import F, Q
+from django.db.models import F, Q, Sum
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
@@ -26,8 +26,30 @@ def staff_required(view):
 
 @login_required
 def home(request):
-    return render(request, 'home.html')
-
+    today = timezone.now().date()
+    if request.user.is_staff:
+        active = Issue.objects.filter(return_date__isnull=True)
+        overdue = active.filter(due_date__lt=today).select_related(
+            'book', 'member__user').order_by('due_date')
+        context = {
+            'total_titles': Book.objects.count(),
+            'total_copies': Book.objects.aggregate(t=Sum('total_copies'))['t'] or 0,
+            'issued_count': active.count(),
+            'overdue_count': overdue.count(),
+            'member_count': Member.objects.count(),
+            'overdue': overdue[:10],
+        }
+    else:
+        mine = Issue.objects.filter(
+            member__user=request.user, return_date__isnull=True
+        ).select_related('book').order_by('due_date')
+        context = {
+            'my_active': mine,
+            'my_overdue_count': mine.filter(due_date__lt=today).count(),
+            'my_fine': sum(i.fine for i in mine),
+        }
+    context['today'] = today
+    return render(request, 'home.html', context)
 
 def signup(request):
     if request.method == 'POST':

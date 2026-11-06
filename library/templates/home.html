@@ -1,11 +1,112 @@
 {% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
 {% block content %}
 {% if user.is_staff %}
-    <h2>Librarian dashboard</h2>
-    <p>Welcome, {{ user.username }}. Book management, issuing and returns will appear here.</p>
-    <a href="/admin/" class="btn btn-dark">Open admin panel</a>
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="mb-0">Librarian dashboard</h2>
+        <a href="{% url 'issue_book' %}" class="btn btn-dark">Issue a book</a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100"><div class="card-body">
+                <div class="fs-2 fw-bold">{{ total_titles }}</div>
+                <div class="text-muted">Book titles</div>
+                <small class="text-muted">{{ total_copies }} copies in total</small>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100"><div class="card-body">
+                <div class="fs-2 fw-bold">{{ issued_count }}</div>
+                <div class="text-muted">Currently issued</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100 {% if overdue_count %}border-danger{% endif %}"><div class="card-body">
+                <div class="fs-2 fw-bold {% if overdue_count %}text-danger{% endif %}">{{ overdue_count }}</div>
+                <div class="text-muted">Overdue</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100"><div class="card-body">
+                <div class="fs-2 fw-bold">{{ member_count }}</div>
+                <div class="text-muted">Members</div>
+            </div></div>
+        </div>
+    </div>
+
+    <h5>Overdue books</h5>
+    <div class="table-responsive">
+    <table class="table table-striped bg-white">
+        <thead>
+            <tr><th>Book</th><th>Member</th><th>Due</th><th>Fine</th></tr>
+        </thead>
+        <tbody>
+        {% for i in overdue %}
+            <tr>
+                <td>{{ i.book.title }}</td>
+                <td>{{ i.member }}</td>
+                <td>{{ i.due_date }}</td>
+                <td><span class="badge bg-danger">₹{{ i.fine }}</span></td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4" class="text-center">No overdue books.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <a href="{% url 'issue_list' %}" class="btn btn-outline-dark btn-sm">See all issued books</a>
+    <a href="/admin/" class="btn btn-outline-secondary btn-sm">Admin panel</a>
+
 {% else %}
     <h2>Welcome, {{ user.username }}</h2>
-    <p>Your borrowed books and the book catalog will appear here.</p>
+
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100"><div class="card-body">
+                <div class="fs-2 fw-bold">{{ my_active|length }}</div>
+                <div class="text-muted">Books borrowed</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100 {% if my_overdue_count %}border-danger{% endif %}"><div class="card-body">
+                <div class="fs-2 fw-bold {% if my_overdue_count %}text-danger{% endif %}">{{ my_overdue_count }}</div>
+                <div class="text-muted">Overdue</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="card text-center h-100"><div class="card-body">
+                <div class="fs-2 fw-bold">₹{{ my_fine }}</div>
+                <div class="text-muted">Fine so far</div>
+            </div></div>
+        </div>
+    </div>
+
+    <h5>Your borrowed books</h5>
+    <div class="table-responsive">
+    <table class="table table-striped bg-white">
+        <thead>
+            <tr><th>Book</th><th>Due</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+        {% for i in my_active %}
+            <tr>
+                <td>{{ i.book.title }}</td>
+                <td>{{ i.due_date }}</td>
+                <td>
+                    {% if i.due_date < today %}
+                        <span class="badge bg-danger">Overdue, fine ₹{{ i.fine }}</span>
+                    {% else %}
+                        <span class="badge bg-success">On time</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="3" class="text-center">You haven't borrowed anything yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    </div>
+    <a href="{% url 'book_list' %}" class="btn btn-dark">Browse books</a>
 {% endif %}
 {% endblock %}
