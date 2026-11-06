@@ -8,7 +8,8 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import render, redirect, get_object_or_404
 
 from .forms import BookForm
-from .models import Book, Member
+from django.db.models import Q
+from .models import Book, Category, Member
 
 
 def staff_required(view):
@@ -42,7 +43,22 @@ def signup(request):
 @login_required
 def book_list(request):
     books = Book.objects.select_related('category').order_by('title')
-    return render(request, 'book_list.html', {'books': books})
+    q = request.GET.get('q', '').strip()
+    category_id = request.GET.get('category', '')
+
+    if q:
+        books = books.filter(
+            Q(title__icontains=q) | Q(author__icontains=q) | Q(isbn__icontains=q)
+        )
+    if category_id.isdigit():
+        books = books.filter(category_id=category_id)
+
+    return render(request, 'book_list.html', {
+        'books': books,
+        'categories': Category.objects.all(),
+        'q': q,
+        'selected_category': category_id,
+    })
 
 
 @staff_required
