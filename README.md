@@ -30,20 +30,6 @@ A web-based library management system built with Django. Librarians manage the b
 - Bootstrap 5
 - Hosted on PythonAnywhere
 
-## Screenshots
-
-| Login | Librarian dashboard |
-|---|---|
-| ![Login](screenshots/login.png) | ![Dashboard](screenshots/dashboard.png) |
-
-| Book catalog with search | Issue a book |
-|---|---|
-| ![Catalog](screenshots/catalog.png) | ![Issue](screenshots/issue.png) |
-
-| Issued books and fines | Member view on mobile |
-|---|---|
-| ![Issued](screenshots/issued.png) | ![Mobile](screenshots/mobile.png) |
-
 ## Run it locally
 
 ```bash
